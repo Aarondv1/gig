@@ -1,0 +1,81 @@
+﻿@model Gigelicious.ViewModels.GigViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+<h2>@Model.Heading</h2>
+<ul class="gigs voffset5">
+    @foreach (var gig in Model.UpCominGigs)
+    {
+        <li>
+            <div class="date">
+                <div class="month">@gig.DateTime.ToString("MMM")</div>
+                <div class="day">@gig.DateTime.ToString("d ")</div>
+            </div>
+
+            <div class="details">
+                <span class="artist">@gig.Artist.Name</span>
+                @if (gig.IsCancelled)
+                        {
+                    <span class="label label-warning">Cancelled</span>
+                }
+                <span class="genre">@gig.Genre.Name</span>
+                @if (Model.IsAuthenticated)
+                {
+                    if(!gig.IsCancelled)
+                    {
+                        <button data-gigid="@gig.Id" class="btn btn-default btn-sm js-attend-button pull-right">Going?</button>
+                    }
+
+                    <button data-artistid="@gig.ArtistId" class="btn btn-default btn-sm js-follow-button pull-right">Follow?</button>
+                }
+                
+            </div>
+
+
+
+        </li>
+    }
+</ul>
+@section scripts
+{
+    <script>
+        $(document).ready(function() {
+
+            var apostUrl = "http://localhost:60128/api/Attendance/";
+            var fpostUrl = "http://localhost:60128/api/Follow/";
+
+            var $abutton = $(".js-attend-button");
+            var $fbutton = $(".js-follow-button");
+
+            $abutton.on("click",
+                function(e) {
+                    var $thisButton = $(e.target);
+                    var $gigid = $thisButton.attr("data-gigid");
+
+                    $.post(apostUrl, { 'gigId': $gigid })
+                        .done(function() {
+                            $thisButton.removeClass("btn-default").addClass("btn-success").text("GOING");
+                        });
+
+
+                });
+
+            $fbutton.on("click",
+                function(e) {
+                    $thisButton = $(e.target);
+
+                    $.post(fpostUrl, { "artistId": $thisButton.attr("data-artistid") }).done(
+                        function () { $thisButton.removeClass("btn-default").addClass("btn-danger").text("Following"); }
+                    );
+
+                    
+
+
+                });
+
+
+        });
+
+
+    </script>
+}
